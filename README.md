@@ -1,4 +1,4 @@
-# README para el Sistema de Gestión de Inventarios de Productos
+# Sistema de Gestión de Inventarios de Productos
 
 ## Descripción del Reto
 
@@ -96,7 +96,6 @@ El proyecto está estructurado como un proyecto Maven con los siguientes módulo
 
    ```bash
    git clone https://github.com/jerry-rodrigo/evalucion-intercorp
-   cd <nombre-del-repositorio>
    ```
 
 2. **Construir el Proyecto**:
@@ -176,11 +175,11 @@ curl --location --request PUT 'http://localhost:8080/api/product/670622410e9f970
 curl --location 'http://localhost:8080/api/product'
 ```
 
-![img.png](img.png)
+![image](https://github.com/user-attachments/assets/f1c19863-2144-468b-acd9-7259b6a9a08f)
 
-![img_1.png](img_1.png)
+![image](https://github.com/user-attachments/assets/7a1f48d0-38fd-48e9-a755-4b189aa1936b)
 
-![img_2.png](img_2.png)
+![image](https://github.com/user-attachments/assets/3b8fe5b8-daaf-4414-91de-c2f3d588d32e)
 
 ## Conclusión
 
