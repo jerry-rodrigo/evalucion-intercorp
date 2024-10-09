@@ -1,0 +1,12 @@
+.form-label {
+    font-weight: bold;
+}
+
+.form-control, .form-select {
+    transition: border-color 0.3s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}

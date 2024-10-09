@@ -1,0 +1,124 @@
+version: '3'
+services:
+
+  ### MongoDB database for Products
+  db-products:
+    container_name: db-products
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    expose:
+      - 27017
+
+  ### Zookeeper
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:7.4.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  ### Kafka
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.4.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  ### Products Service
+  products-service:
+    container_name: products-service
+    build:
+      context: ./products-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_URI: http://discovery-server:8761/eureka
+      KAFKA_SERVERS: kafka:9092
+    depends_on:
+      - kafka
+      - db-products
+
+  ### Notification Service
+  notification-service:
+    container_name: notification-service
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_URI: http://discovery-server:8761/eureka
+      KAFKA_SERVERS: kafka:9092
+    depends_on:
+      - kafka
+
+  ### Discovery Service (Eureka)
+  discovery-server:
+    container_name: discovery-server
+    build:
+      context: ./discovery-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_URI: http://discovery-server:8761/eureka
+
+  ### API Gateway
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_URI: http://discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+      - products-service
+      - notification-service
+
+  ### Prometheus
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:v2.46.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./files/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  ### Grafana
+  grafana:
+    container_name: grafana
+    image: grafana/grafana-oss:10.0.3
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    links:
+      - prometheus
+    volumes:
+      - ./files/grafana:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: admin
+    depends_on:
+      - prometheus

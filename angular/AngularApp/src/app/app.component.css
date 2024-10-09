@@ -1,0 +1,12 @@
+h1 {
+    font-family: 'Arial', sans-serif;
+    color: #007bff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .badge {
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    border-radius: 0.5rem;
+  }
+  
